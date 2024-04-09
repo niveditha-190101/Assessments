@@ -1,0 +1,136 @@
+1.
+
+SELECT 
+	CUSTOMERID
+FROM 
+	CustomerInteractions
+WHERE 
+	DATAUSED > (SELECT AVG(DATAUSED) FROM CustomerInteractions WHERE MONTH = 'MARCH')
+and 
+	MONTH = 'MARCH';
+
+------------------------------------
+2.
+
+SELECT 
+	CUSTOMERID
+FROM 
+	CustomerInteractions
+WHERE 
+	(MONTH = 'MARCH'and CALLDURATION) > (MONTH = 'FEBRUARY' AND CALLDURATION);
+
+------------------------------------
+3.
+
+SELECT
+	CUSTOMERID
+FROM
+	CUSTOMERINTERACTIONS
+WHERE
+	(MONTH = 'MARCH' AND MESSAGECOUNT) < (MONTH = 'FEBRUARY' AND MESSAGECOUNT)
+AND
+	(MONTH = 'MARCH' and DATAUSED) > (MONTH = 'FEBRUARY' AND DATAUSED);
+
+------------------------------------
+4.
+
+SELECT 
+	PRODUCTTYPEID, SUM(UnitsSold)
+FROM 
+	quarterlysales
+-- WHERE 
+	-- PRODUCTTYPEID = 1
+GROUP BY
+	ProductTypeID;
+
+------------------------------------
+5.
+
+SELECT 
+	QUARTER, MAX(UnitsSold)
+FROM 
+	quarterlysales
+WHERE 
+	QUARTER = 'Q1';
+
+------------------------------------
+6.
+
+SELECT 
+	QUARTER, AVG(UnitsSold)
+FROM 
+	quarterlysales
+WHERE 
+	QUARTER = 'Q2'
+AND 
+	ProductTypeID = 1;
+
+------------------------------------
+7.
+SELECT 
+	REGIONS 
+FROM 
+	sectorenergyconsumption
+WHERE 
+	ConsumptionKWh > (SELECT AVG(ConsumptionKWh) FROM sectorenergyconsumption)
+AND 
+	MONTH = 'MARCH' 
+AND 
+	ENERGYSOURCE = 'SOLAR' 
+OR 
+	ENERGYSOURCE = 'WIND';
+
+------------------------------------
+8.
+
+SELECT 
+	DISTINCT(SECTOR)
+FROM 
+	sectorenergyconsumption
+WHERE 
+	(MONTH = 'MARCH'and CONSUMPTIONKWH) > (MONTH = 'FEBRUARY' AND CONSUMPTIONKWH);
+
+------------------------------------
+9.
+SELECT 
+	(SUM(CONSUMPTIONKWH) AND EnergySource = 'FOSSIL FUELS') - (SUM(CONSUMPTIONKWH) AND EnergySource <> 'FOSSIL FUELS')
+FROM 
+	sectorenergyconsumption;
+
+------------------------------------
+10.
+
+SELECT 
+	CustomerName
+FROM 
+	insuranceactivities
+WHERE 
+	FEEDBACKSCORE > (SELECT AVG(FEEDBACKSCORE) FROM insuranceactivities)
+AND 
+	INVESTIGATION = 'NO';
+
+------------------------------------
+11.
+
+SELECT 
+	SUM(ANNUALPREMIUM)
+FROM 
+	insuranceactivities
+WHERE 
+	FEEDBACKSCORE > (SELECT AVG(FEEDBACKSCORE) FROM insuranceactivities)
+AND 
+	INVESTIGATION = 'NO'
+AND 
+	ClaimsCount >= 1;
+
+------------------------------------
+12.
+
+SELECT 
+	PolicyType, AVG(FeedbackScore), SUM(ClaimsCount)
+FROM 
+	insuranceactivities
+GROUP BY 
+	PolicyType
+ORDER BY 
+	SUM(ClaimsCount) DESC;
