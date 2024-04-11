@@ -1,0 +1,107 @@
+1
+SELECT machine_id 
+FROM l1_maintenance_records
+WHERE COST > (SELECT AVG(COST) FROM l1_maintenance_records);
+
+---------------------------------
+2
+SELECT maintenance_type, COUNT(maintenance_type) AS 'TIMES'
+FROM l1_maintenance_records
+WHERE monthname(MAINTENANCE_DATE) = 'MARCH'
+group by maintenance_type;
+
+---------------------------------
+3
+SELECT technician_name, COUNT(maintenance_type) AS 'COUNT'
+FROM l1_maintenance_records
+WHERE monthname(MAINTENANCE_DATE) = 'MARCH'
+GROUP BY technician_name
+UNION
+-- (SELECT AVG(COST) FROM l1_maintenance_records)
+SELECT technician_name, AVG(COST) AS 'AVERAGE'
+FROM l1_maintenance_records
+WHERE monthname(MAINTENANCE_DATE) = 'MARCH'
+GROUP BY technician_name;
+
+---------------------------------
+4
+SELECT AVG(incident_count_pre_update) - AVG(incident_count_post_update) AS 'AVG. COUNT SHIFT BEFORE AND AFTER'
+FROM l2_updates;
+
+---------------------------------
+5
+SELECT product_id, incident_count_post_update*user_feedback_score AS SCORE
+FROM l2_updates
+WHERE incident_count_post_update*user_feedback_score >= (SELECT max(incident_count_post_update*user_feedback_score) FROM l2_updates);
+
+---------------------------------
+6
+SELECT 
+	product_id, 
+    (incident_count_post_update/(incident_count_pre_update+incident_count_post_update)*100) AS SCORE
+FROM 
+	l2_updates
+WHERE 
+	incident_count_post_update/(incident_count_pre_update+incident_count_post_update)*100 
+    <= (SELECT min(incident_count_post_update/(incident_count_pre_update+incident_count_post_update)*100) FROM l2_updates);
+
+by percentage comparision, product 102 has the least efficiency score.
+
+---------------------------------
+7
+SELECT pa.patient_name, vi.facility_id, tr.treatment, tr.outcome /*name facility reason outcome*/
+FROM l3_patients pa  
+JOIN l3_visits vi ON pa.patient_id = vi.patient_id 
+JOIN l3_treatments tr ON tr.visit_id = vi.visit_id
+WHERE monthname(vi.visit_date) = 'March'
+
+---------------------------------
+8
+select fa.facility_name, vi.reason_for_visit, count(vi.reason_for_visit) as 'count'
+from l3_visits vi, l3_facilities fa
+where vi.facility_id = fa.facility_id
+and vi.reason_for_visit = 'emergency'
+group by fa.facility_name, vi.reason_for_visit;
+
+---------------------------------
+9
+SELECT pa.insurance_provider, count(pa.insurance_provider)
+FROM l3_patients pa  
+JOIN l3_visits vi ON pa.patient_id = vi.patient_id 
+JOIN l3_treatments tr ON tr.visit_id = vi.visit_id
+WHERE monthname(vi.visit_date) IN ('January','February','March')
+AND tr.outcome = 'complicated'
+GROUP BY pa.insurance_provider
+ORDER BY pa.insurance_provider DESC limit 1;
+
+---------------------------------
+10
+SELECT pr.product_name, category, sum(sa.quantity) as 'net sold'
+FROM l4_sales sa, l4_products pr
+WHERE pr.product_id = sa.product_id
+AND monthname(sale_date) = 'March'
+group by pr.product_name, category
+ORDER BY sum(sa.quantity) desc limit 1;
+
+---------------------------------
+11
+create view sales_new as
+(
+select st.region, SUM(sa.quantity*pr.price) as 'SALES_NET'
+from l4_sales sa, l4_stores st, l4_products pr
+where sa.store_id = st.store_id and pr.product_id = sa.product_id
+group by st.region);
+
+SELECT region, max(sales_net) as 'sales_max' from sales_new
+group by region
+order by max(sales_net) desc limit 1;
+
+---------------------------------
+12
+select st.region, pr.category
+from l4_sales sa 
+LEFT JOIN l4_stores st ON sa.store_id = st.store_id
+RIGHT JOIN l4_products pr ON pr.product_id = sa.product_id
+where monthname(sale_date) = 'MARCH'
+and sa.quantity = 0
+group by st.region,pr.category
