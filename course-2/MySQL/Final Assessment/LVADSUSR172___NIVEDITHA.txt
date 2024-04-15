@@ -1,0 +1,138 @@
+1.
+select p.product_category, round(avg(s.sales_amount),2) from customers c
+join sales_records s on c.customer_id = s.customer_id
+join products p on p.product_id = s.product_id
+where datediff(current_date(),sales_date) <= 30
+group by p.product_category
+order by p.product_category;
+
+2.
+select p.product_category, sum(s.sales_amount) as net_sales
+from sales_records s
+join products p on p.product_id = s.product_id
+group by p.product_category
+order by net_sales desc limit 3
+
+3.
+
+4.
+select c.customer_name, s.product_id,
+case
+	when datediff(current_date(),sales_date) < 120 then 'regular'
+    else 'Ocassional buyer'
+end as 'Buyer status'
+from sales_records s
+join customers c on c.customer_id = s.customer_id
+join products p on p.product_id = s.product_id
+order by c.customer_name;
+
+5.
+select f.departure_airport, f.arrival_airport, avg(base_price) 
+from flights f
+join tickets t on t.flight_id = f.flight_id
+group by f.departure_airport, f.arrival_airport;
+
+6.
+select f.flight_number, count(*) as 'tickets sold'
+from flights f
+join tickets t on t.flight_id = f.flight_id
+where datediff(current_date(),ticket_date) < 30
+group by f.flight_number;
+
+7.
+select p.passenger_name, sum(t.ticket_price) as 'money spent', p.frequent_flyer_status
+from passengers p
+join tickets t on t.passenger_id = p.passenger_id
+group by p.passenger_name;
+
+8.
+select monthname(ticket_date) as month, 
+count(*) as `tickets sold`
+from tickets t
+join passengers p on t.passenger_id = p.passenger_id
+group by monthname(ticket_date)
+order by count(*) desc limit 1;
+
+9.
+select g.game_genre, round(avg(ps.score),2) AS 'playtime in min' from playerscores ps
+join players p on ps.player_id = p.player_id
+join games g on ps.game_id = g.game_id
+group by g.game_genre
+order by avg(ps.score) desc;
+
+10.
+select g.game_name, count(p.player_id) as 'no. of players' 
+from playerscores ps
+join players p on ps.player_id = p.player_id
+join games g on ps.game_id = g.game_id
+group by g.game_name
+order by count(p.player_id) desc
+limit 3;
+
+11.
+
+12.
+select p.player_name, p.registration_date, ps.play_date 
+from playerscores ps
+join players p on ps.player_id = p.player_id
+-- join games g on ps.game_id = g.game_id
+where datediff(current_date(), play_date) > 30
+
+13.
+select doc.doctor_name, sum(tr.cost)
+from patients pa
+join treatments tr on pa.patient_id = tr.patient_id
+join doctors doc on doc.doctor_id = tr.doctor_id
+group by doc.doctor_name
+order by sum(tr.cost) desc limit 5;
+
+14.
+select tr.treatment_name, sum(pa.bill_amount) as 'BILL'
+from patients pa
+join treatments tr on pa.patient_id = tr.patient_id
+join doctors doc on doc.doctor_id = tr.doctor_id
+group by tr.treatment_name;
+
+15.
+select pa.patient_name, pa.admission_date, pa.discharge_date, lag(pa.admission_date) over() as NEW_DATE
+from patients pa
+join treatments tr on pa.patient_id = tr.patient_id
+join doctors doc on doc.doctor_id = tr.doctor_id
+where datediff(pa.discharge_date, pa.admission_date) < 30;
+
+16.
+
+17.
+select c.department, e.semester, round(avg(e.grade),2) as 'AVG Grade'
+from enrollments e
+join courses c on c.course_id = e.course_id
+group by c.department, e.semester
+order by c.department, e.semester;
+
+18.
+select s.enrollment_year, s.major, count(*) as 'No. of Enrolments'
+from students s
+join enrollments e on s.student_id = e.enrollment_id
+join courses c on c.course_id = e.course_id
+group by s.enrollment_year, s.major
+order by count(*) desc;
+
+19.
+select s.student_id, s.student_name, e.semester, sum(c.credits)
+from students s
+join enrollments e on s.student_id = e.enrollment_id
+join courses c on c.course_id = e.course_id
+group by s.student_id, s.student_name, e.semester
+having sum(credits) > 50;
+
+20.
+with cte as 
+(select c.course_name, s.enrollment_year, count(e.student_id) as counts
+from students s
+join enrollments e on s.student_id = e.enrollment_id
+join courses c on c.course_id = e.course_id
+group by c.course_name, s.enrollment_year 
+order by count(e.student_id) desc)
+
+select *, rank() over(order by counts) as 'rank'
+from cte;
